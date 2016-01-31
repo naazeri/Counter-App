@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="zekrName">نام ذکر</string>
+    <string name="zekrCount">تعداد ذکر</string>
+    <string name="settings_swipe">حرکات</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView"
+    android:layout_width="match_parent"
+    android:layout_height="110dp"
+    android:layout_margin="16dp"
+    card_view:cardBackgroundColor="#fff"
+    card_view:cardCornerRadius="10dp">
+
+    <TextView
+        android:id="@+id/list_name_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="9dp"
+        android:text="نام ذکر"
+        android:textColor="#000"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/list_family_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="9dp"
+        android:text="تعداد ذکر"
+        android:textColor="#000"
+        android:textSize="19sp" />
+
+</android.support.v7.widget.CardView>

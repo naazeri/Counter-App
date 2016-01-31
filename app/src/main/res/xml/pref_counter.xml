@@ -1,0 +1,43 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/settings_swipe">
+
+        <ListPreference
+            android:defaultValue="@string/settings_swipe_defaultVal_left"
+            android:entries="@array/settings_swipe_titles"
+            android:entryValues="@array/settings_swipe_values"
+            android:key="@string/settings_swipe_key_left"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/settings_swipe_title_left" />
+
+        <ListPreference
+            android:defaultValue="@string/settings_swipe_defaultVal_right"
+            android:entries="@array/settings_swipe_titles"
+            android:entryValues="@array/settings_swipe_values"
+            android:key="@string/settings_swipe_key_right"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/settings_swipe_title_right" />
+
+        <ListPreference
+            android:defaultValue="@string/settings_swipe_defaultVal_up"
+            android:entries="@array/settings_swipe_titles"
+            android:entryValues="@array/settings_swipe_values"
+            android:key="@string/settings_swipe_key_up"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/settings_swipe_title_up" />
+
+        <ListPreference
+            android:defaultValue="@string/settings_swipe_defaultVal_down"
+            android:entries="@array/settings_swipe_titles"
+            android:entryValues="@array/settings_swipe_values"
+            android:key="@string/settings_swipe_key_down"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/settings_swipe_title_down" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
