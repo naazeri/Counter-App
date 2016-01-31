@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="libSFG-1.1-release">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libSFG-1.1-release.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
