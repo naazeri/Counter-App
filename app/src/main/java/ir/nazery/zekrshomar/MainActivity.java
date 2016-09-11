@@ -1,52 +1,55 @@
 package ir.nazery.zekrshomar;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.squareup.otto.Bus;
+import com.squareup.otto.Produce;
+import com.squareup.otto.Subscribe;
+import com.squareup.otto.ThreadEnforcer;
+
 import ir.nazery.zekrshomar.database.DataManager;
+import ir.nazery.zekrshomar.database.Zekr;
 import ir.nazery.zekrshomar.fragments.CounterFragment;
-import ir.nazery.zekrshomar.fragments.SettingFragment;
 import ir.nazery.zekrshomar.fragments.ZekrListFragment;
 import ir.nazery.zekrshomar.setting.SettingsActivity;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        ZekrListFragment.OnClickListener {
+public class MainActivity extends AppCompatActivity implements
+        ZekrListFragment.OnZekrClickListener {
 
-    private String TAG = "MainActivity";
+    private final String TAG = "aksjdfoiuqwer";
+    private final String COUNTER_FRAGMENT = "cf";
+    public static Bus bus = new Bus(ThreadEnforcer.MAIN);
+    private final int ADD = 1;
+    private final int MINUS = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initView();
-        initDB();
-        loadFirstFragment();
-    }
-
-    private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        initDB();
+        loadFirstFragment();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        bus.register(this);
+    }
+
+    @Subscribe
+    public void zekrChange(Zekr zekr) {
+        Log.d(TAG, String.format("event info: %s  %s", zekr.getZekrName(), zekr.getZekrCountAsString()));
+        Toast.makeText(MainActivity.this, "info: " + zekr.getZekrName(), Toast.LENGTH_SHORT).show();
     }
 
     private void initDB() {
@@ -59,22 +62,71 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadFirstFragment() {
-        getFragmentManager().beginTransaction()
-                .add(R.id.mainContainer, new ZekrListFragment())
+        ZekrListFragment fragment = new ZekrListFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.mainContainer, fragment)
                 .commit();
     }
 
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            if (getFragmentManager().getBackStackEntryCount() == 0) {
-                super.onBackPressed();
-            } else {
-                getFragmentManager().popBackStack();
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        try {
+            int action = event.getAction();
+            int keyCode = event.getKeyCode();
+
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+//                Log.d(TAG, "volume up");
+                if (action == KeyEvent.ACTION_DOWN) {
+//                    CounterFragment fragment = (CounterFragment) getSupportFragmentManager().findFragmentByTag(COUNTER_FRAGMENT);
+//                    fragment.changeValue(ADD);
+                    bus.post(ADD);
+                }
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+//                Log.d(TAG, "volume down");
+                if (action == KeyEvent.ACTION_DOWN) {
+//                    CounterFragment fragment = (CounterFragment) getSupportFragmentManager().findFragmentByTag(COUNTER_FRAGMENT);
+//                    fragment.changeValue(MINUS);
+                    bus.post(MINUS);
+                }
+                return true;
             }
+        } catch (Exception ignored) {
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
+
+//    @Produce
+//    Integer add() {
+//        return ADD;
+//    }
+//
+//    @Produce
+//    Integer minus() {
+//        return MINUS;
+//    }
+
+    @Override
+    public void onZekrSelected(int position) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.mainContainer, CounterFragment.newInstance(position), COUNTER_FRAGMENT)
+                .addToBackStack(null)
+                .commit();
+
+    }
+
+//    private void emptyFragmentStack() {
+//        while (getSupportFragmentManager().popBackStackImmediate()) {
+//        }
+//    }
+
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        } else {
+            getSupportFragmentManager().popBackStack();
         }
     }
 
@@ -96,64 +148,32 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
+            case R.id.action_rate:
+                try {
+                    showBazarRate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "خطا", Toast.LENGTH_SHORT).show();
+                }
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        switch (item.getItemId()) {
-            case R.id.navView_zekrs:
-                emptyFragmentStack();
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.mainContainer, new ZekrListFragment())
-                        .commit();
-                break;
-            case R.id.nav_gallery:
-
-                break;
-            case R.id.nav_slideshow:
-                break;
-            case R.id.navView_settings:
-                break;
-            case R.id.nav_share:
-                break;
-            case R.id.nav_send:
-                break;
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    private void showMyketRate() throws Exception {
+        // myket rate
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(String.format("myket://comment/#Intent;scheme=comment;package=%s;end", getPackageName())));
+        startActivity(intent);
     }
 
-    private void emptyFragmentStack() {
-//        int count = getFragmentManager().getBackStackEntryCount();
-//        Log.d(TAG, "stack count: " + count);
-//
-//        boolean condition = getFragmentManager().popBackStackImmediate();
-//        count = getFragmentManager().getBackStackEntryCount();
-//        Log.d(TAG, String.format("stack count: %d with condition: %s", count, condition));
-//
-//        condition = getFragmentManager().popBackStackImmediate();
-//        count = getFragmentManager().getBackStackEntryCount();
-//        Log.d(TAG, String.format("stack count: %d with condition: %s", count, condition));
-
-        while (getFragmentManager().popBackStackImmediate()) {
-            Log.d(TAG, "pop stack");
-        }
-    }
-
-    @Override
-    public void onItemSelected(int position) {
-        getFragmentManager().beginTransaction()
-                .replace(R.id.mainContainer, CounterFragment.newInstance(position))
-                .addToBackStack(CounterFragment.TAG)
-                .commit();
-
+    private void showBazarRate() throws Exception {
+        // bazar rate
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        intent.setData(Uri.parse("bazaar://details?id=" + getPackageName()));
+        intent.setPackage("com.farsitel.bazaar");
+        startActivity(intent);
     }
 
 //    @Override

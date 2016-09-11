@@ -1,13 +1,12 @@
 package ir.nazery.zekrshomar.fragments;
 
-import android.app.Fragment;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,25 +14,29 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.squareup.otto.Bus;
+import com.squareup.otto.Produce;
+import com.squareup.otto.Subscribe;
+
 import in.championswimmer.sfg.lib.SimpleFingerGestures;
+import ir.nazery.zekrshomar.MainActivity;
 import ir.nazery.zekrshomar.R;
 import ir.nazery.zekrshomar.database.DataManager;
 import ir.nazery.zekrshomar.database.Zekr;
 
-public class CounterFragment extends Fragment implements SimpleFingerGestures.OnFingerGestureListener {
+public class CounterFragment extends Fragment implements
+        SimpleFingerGestures.OnFingerGestureListener {
 
     private EditText zekrCount_textView;
-    //    private ZekrChangeListener listener;
-    public static String TAG = "CounterFragment";
-    private Zekr zekr;
+    public static String TAG = "aksjdfoiuqwer";
+    public Zekr zekr;
     private int actionLeft, actionRight, actionUp, actionDown;
+    private DataManager dataManager;
+    private EditText zekrName_textView;
+    private MediaPlayer mediaPlayer;
 
     public CounterFragment() {
     }
-
-//    public interface ZekrChangeListener {
-//        void onZekrChange(Zekr zekr, int position);
-//    }
 
     public static CounterFragment newInstance(int position) {
         CounterFragment fragment = new CounterFragment();
@@ -44,33 +47,13 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        int position = getArguments().getInt(Zekr.ZEKR_POSITION, -1);
-        if (position >= 0) {
-            try {
-                zekr = new DataManager().getZekrs(getActivity()).get(position);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Snackbar.make(getView(), R.string.errorInDB, Snackbar.LENGTH_LONG).show();
-            }
-        } else {
-            zekr = new Zekr("", 0);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_counter, container, false);
 
         SimpleFingerGestures gestures = new SimpleFingerGestures();
-        gestures.setDebug(true);
+        gestures.setDebug(false);
         gestures.setConsumeTouchEvents(true);
-
         gestures.setOnFingerGestureListener(this);
-
         view.setOnTouchListener(gestures);
 
         return view;
@@ -80,7 +63,25 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        EditText zekrName_textView = (EditText) view.findViewById(R.id.counter_zekrName_textView);
+        dataManager = new DataManager();
+        int position = getArguments().getInt(Zekr.ZEKR_POSITION, -1);
+
+        if (position > -1) {
+            try {
+                zekr = dataManager.getZekrs().get(position);
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (getView() != null) {
+                    Snackbar.make(getView(), R.string.errorInDB, Snackbar.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), R.string.errorInDB, Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else {
+            zekr = new Zekr("", 0);
+        }
+
+        zekrName_textView = (EditText) view.findViewById(R.id.counter_zekrName_textView);
         zekrCount_textView = (EditText) view.findViewById(R.id.counter_zekrCount_textView);
 
         zekrName_textView.setText(zekr.getZekrName());
@@ -92,7 +93,6 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
 
     private void setActions() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
         actionLeft = Integer.parseInt(preferences.getString(getString(R.string.settings_swipe_key_left), getString(R.string.settings_swipe_defaultVal_left)));
         actionRight = Integer.parseInt(preferences.getString(getString(R.string.settings_swipe_key_right), getString(R.string.settings_swipe_defaultVal_right)));
         actionUp = Integer.parseInt(preferences.getString(getString(R.string.settings_swipe_key_up), getString(R.string.settings_swipe_defaultVal_up)));
@@ -100,8 +100,37 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
 //        Log.d(TAG, "setActions: " + actionLeft + "  " + actionRight + "  " + actionUp + "  " + actionDown);
     }
 
-    private void updateDisplay() {
+    private void updateDisplay(Zekr zekr) {
         zekrCount_textView.setText(zekr.getZekrCountAsString());
+    }
+
+    public boolean changeValue(int n) {
+//        int zekrCount = zekr.getZekrCountAsInteger() + n;
+        try {
+            int zekrCount = Integer.parseInt(zekrCount_textView.getText().toString()) + n;
+            if (zekrCount <= 0) {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+                    mediaPlayer = MediaPlayer.create(getActivity(), R.raw.music);
+                }
+
+                if (mediaPlayer == null) {
+                    mediaPlayer = MediaPlayer.create(getActivity(), R.raw.music);
+                }
+                mediaPlayer.start();
+            }
+
+            if (zekrCount < 0) {
+                return false;
+            }
+            zekr.setZekrCount(zekrCount);
+            updateDisplay(zekr);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     @Override
@@ -143,40 +172,38 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
         return false;
     }
 
-//    private void plusPlus() {
-//        zekr.setZekrCount(zekr.getZekrCountAsInteger() + 1);
-//    }
-
-    private boolean changeValue(int n) {
-        int zekrCount = zekr.getZekrCountAsInteger() + (n);
-        if (zekrCount < 0) {
-            return false;
-        }
-        zekr.setZekrCount(zekrCount);
-        updateDisplay();
-        return true;
+    @Subscribe
+    public void volumeButtonClick(Integer value) {
+//        Log.d(TAG, "volumeButtonClick: " + value);
+        changeValue(value);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         setActions();
+        MainActivity.bus.register(this);
     }
 
     @Override
     public void onPause() {
         try {
-            int position = getArguments().getInt(Zekr.ZEKR_POSITION);
-            EditText zekrName_textView = (EditText) getView().findViewById(R.id.counter_zekrName_textView);
-            zekr.setZekrName(zekrName_textView.getText().toString());
-            Context context = getActivity();
-            new DataManager().updateDB(context, zekr, position);
+            MainActivity.bus.post(zekr);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "onPause: Error", e);
+            int position = getArguments().getInt(Zekr.ZEKR_POSITION);
+            zekr.setZekrName(zekrName_textView.getText().toString());
+            zekr.setZekrCount(Integer.parseInt(zekrCount_textView.getText().toString()));
+            dataManager.updateDB(zekr, position);
+
+        } catch (NumberFormatException e1) {
+            Toast.makeText(getActivity(), "تعداد ذکر خالی است", Toast.LENGTH_LONG).show();
+        } catch (Exception e2) {
+            e2.printStackTrace();
+            Log.e(TAG, "onPause: Error", e2);
             Toast.makeText(getActivity(), R.string.errorInDB, Toast.LENGTH_LONG).show();
         }
+
+        MainActivity.bus.unregister(this);
         super.onPause();
     }
 }

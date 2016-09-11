@@ -6,12 +6,17 @@ import android.os.Bundle;
  * Created by REZA on 1/25/2016
  ***/
 public class Zekr {
-    /*** Constant for field references ***/
+    /***
+     * Constant for field references
+     ***/
     public static final String ZEKR_NAME = "ZN";
     public static final String ZEKR_COUNT = "ZC";
     public static final String DB_ZEKRS = "Zekrs";
     public static final String ZEKR_POSITION = "P";
 
+    /***
+     * Fields
+     ***/
     private String zekrName;
     private int zekrCount;
 

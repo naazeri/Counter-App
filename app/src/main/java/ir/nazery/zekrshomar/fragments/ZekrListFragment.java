@@ -1,92 +1,156 @@
 package ir.nazery.zekrshomar.fragments;
 
-import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.squareup.otto.Subscribe;
+
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import ir.nazery.zekrshomar.R;
+import ir.nazery.zekrshomar.adapter.RecyclerItemClickListener;
 import ir.nazery.zekrshomar.adapter.ZekrListAdapter;
 import ir.nazery.zekrshomar.database.DataManager;
+import ir.nazery.zekrshomar.database.Zekr;
 
-public class ZekrListFragment extends Fragment implements View.OnClickListener {
+public class ZekrListFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener {
 
+    private static final String TAG = "aksjdfoiuqwer";
+    private TextView emptyView;
     private RecyclerView recyclerView;
-//    private OnClickListener itemClickListener;
+    private OnZekrClickListener itemClickListener;
+    private ZekrListAdapter adapter;
+    private DataManager dataManager;
+    private List<Zekr> list = new LinkedList<>();
 
     public ZekrListFragment() {
     }
 
-    public interface OnClickListener {
-        void onItemSelected(int position);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_list_zekr, container, false);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public void onViewCreated(final View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        View view = inflater.inflate(R.layout.fragment_list_zekr, container, false);
+        Log.d(TAG, "onViewCreated: called");
         try {
-            initView(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return view;
-    }
+            FloatingActionButton addZekr_fab = (FloatingActionButton) view.findViewById(R.id.zekrList_floatButton_addZekr);
+            addZekr_fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    itemClickListener.onZekrSelected(-1);
+                }
+            });
 
-    private void initView(View view) throws Exception {
-        recyclerView = (RecyclerView) view.findViewById(R.id.zekrList_recyclerView);
-        FloatingActionButton addZekr_fab = (FloatingActionButton) view.findViewById(R.id.zekrList_floatButton_addZekr);
+            emptyView = (TextView) view.findViewById(R.id.zekrList_textView_emptyMessage);
+            recyclerView = (RecyclerView) view.findViewById(R.id.zekrList_recyclerView);
 
-        recyclerView.setHasFixedSize(false);
+            recyclerView.setHasFixedSize(false);
+            recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+            dataManager = new DataManager();
+            adapter = new ZekrListAdapter(list);
+            recyclerView.setAdapter(adapter);
+            recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(view.getContext(), this));
 
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
-        RecyclerView.Adapter adapter = new ZekrListAdapter(new DataManager().getZekrs(getActivity()), this);
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                    Collections.swap(list, viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                    adapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                    return true;
+                }
 
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
+                @Override
+                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                    final int position = viewHolder.getAdapterPosition();
+                    final Zekr removedZekr = list.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    checkListIsEmpty();
 
-        addZekr_fab.setOnClickListener(this);
-    }
+                    Snackbar.make(view, MessageFormat.format("ذکر '{0}' حذف شد", removedZekr.getZekrName()), Snackbar.LENGTH_LONG)
+                            .setAction("بازگرداندن", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    list.add(position, removedZekr);
+                                    adapter.notifyItemInserted(position);
+                                    checkListIsEmpty();
+                                }
+                            }).show();
+                }
+            });
+            itemTouchHelper.attachToRecyclerView(recyclerView);
 
-    @Override
-    public void onClick(View v) {
-        OnClickListener itemClickListener = (OnClickListener) getActivity();
-        if (v.getId() == R.id.zekrList_floatButton_addZekr) {
-            /*** FloatActionButton Click ***/
-            itemClickListener.onItemSelected(-1);
-        } else {
-            /*** List Item Click ***/
-            try {
-                int position = recyclerView.getChildAdapterPosition(v);
-                itemClickListener.onItemSelected(position);
-            } catch (NullPointerException e) {
-                Snackbar.make(getView(), R.string.zekr404, Snackbar.LENGTH_LONG).show();
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        try {
             updateDisplay();
+
         } catch (Exception e) {
             e.printStackTrace();
-            Snackbar.make(getView(), R.string.errorInDB, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(view, R.string.errorInDB, Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        try {
+            itemClickListener.onZekrSelected(position);
+        } catch (NullPointerException e) {
+            Snackbar.make(v, R.string.zekr404, Snackbar.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
+    private void checkListIsEmpty() {
+        if (emptyView != null) {
+            emptyView.setVisibility(list.size() > 0 ? TextView.GONE : TextView.VISIBLE);
         }
     }
 
     private void updateDisplay() throws Exception {
-//        recyclerView.notify();
-        RecyclerView.Adapter adapter = new ZekrListAdapter(new DataManager().getZekrs(getActivity()), this);
-        recyclerView.setAdapter(adapter);
-//        recyclerView.getAdapter().notifyDataSetChanged();
+        list.clear();
+        list.addAll(dataManager.getZekrs());
+        adapter.notifyDataSetChanged();
+
+        checkListIsEmpty();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        try {
+            dataManager.setZekrs(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnZekrClickListener) {
+            itemClickListener = (OnZekrClickListener) getActivity();
+        }
+    }
+
+    public interface OnZekrClickListener {
+        void onZekrSelected(int position);
     }
 }

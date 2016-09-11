@@ -6,12 +6,13 @@ import com.orhanobut.hawk.Hawk;
 import com.orhanobut.hawk.HawkBuilder;
 import com.orhanobut.hawk.LogLevel;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /*** Created by REZA on 1/25/2016 ***/
 public class DataManager {
     public void initDB(Context context) throws Exception {
+//        Remember.init(context, context.getPackageName());
         Hawk.init(context)
                 .setEncryptionMethod(HawkBuilder.EncryptionMethod.NO_ENCRYPTION)
                 .setPassword("myPASS")
@@ -20,32 +21,16 @@ public class DataManager {
                 .build();
     }
 
-    public List<Zekr> getZekrs(Context context) throws Exception {
-//        initDB(context);
-        return Hawk.get(Zekr.DB_ZEKRS, new ArrayList<Zekr>());
-        //        for (int i = 0; i < 100; ++i) {
-//            int day = i%7;
-//            switch (day) {
-//                case 0:
-//                    list.add( new Zekr("شنبه", i+1) );
-//                    break;
-//                case 6:
-//                    list.add( new Zekr("جمعه", i+1) );
-//                    break;
-//                default:
-//                    list.add( new Zekr(String.format("%d شنبه", day), i+1) );
-//            }
-//        }
+    public List<Zekr> getZekrs() throws Exception {
+        return Hawk.get(Zekr.DB_ZEKRS, new LinkedList<Zekr>());
     }
 
-    public void setZekrs(Context context, List<Zekr> list) throws Exception {
-//        initDB(context);
+    public void setZekrs(List<Zekr> list) throws Exception {
         Hawk.put(Zekr.DB_ZEKRS, list);
     }
 
-    public void updateDB(Context context, Zekr zekr, int position) throws Exception {
-//        initDB(context);
-        List<Zekr> list = Hawk.get(Zekr.DB_ZEKRS, new ArrayList<Zekr>());
+    public void updateDB(Zekr zekr, int position) throws Exception {
+        List<Zekr> list = Hawk.get(Zekr.DB_ZEKRS, new LinkedList<Zekr>());
         if (position >= 0) {
             list.set(position, zekr);
         } else {

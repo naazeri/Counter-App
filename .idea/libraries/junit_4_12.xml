@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="libSFG-1.1-release">
+  <library name="junit-4.12">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/libSFG-1.1-release.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/junit-4.12.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

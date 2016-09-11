@@ -17,18 +17,19 @@ import ir.nazery.zekrshomar.database.Zekr;
  ***/
 public class ZekrListAdapter extends RecyclerView.Adapter<ZekrListAdapter.ViewHolder> {
 
-    private View.OnClickListener clickListener;
+    //    private View.OnClickListener clickListener;
     private List<Zekr> list;
 
-    public ZekrListAdapter(List<Zekr> list, View.OnClickListener clickListener) {
+
+    public ZekrListAdapter(List<Zekr> list) {
         this.list = list;
-        this.clickListener = clickListener;
+//        this.clickListener = clickListener;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.zekr_list_row, parent, false);
-        view.setOnClickListener(clickListener);
+//        view.setOnClickListener(clickListener);
         return new ViewHolder(view);
     }
 
@@ -43,6 +44,11 @@ public class ZekrListAdapter extends RecyclerView.Adapter<ZekrListAdapter.ViewHo
     public int getItemCount() {
         return list.size();
     }
+
+//    public void setData(List<Zekr> list) {
+//        this.list = list;
+//        notifyDataSetChanged();
+//    }
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
