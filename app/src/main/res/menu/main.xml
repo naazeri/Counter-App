@@ -2,13 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_aboutus"
+        android:orderInCategory="1"
+        android:visible="true"
+        android:title="درباره ما"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="1"
+        android:visible="false"
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_rate"
         android:orderInCategory="2"
         android:title="نظر به برنامه"
+        android:visible="false"
         app:showAsAction="never" />
 </menu>

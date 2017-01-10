@@ -50,7 +50,6 @@ public class ZekrListAdapter extends RecyclerView.Adapter<ZekrListAdapter.ViewHo
 //        notifyDataSetChanged();
 //    }
 
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView name_textView, family_tv;
 
@@ -59,9 +58,9 @@ public class ZekrListAdapter extends RecyclerView.Adapter<ZekrListAdapter.ViewHo
             name_textView = (TextView) view.findViewById(R.id.list_name_textView);
             family_tv = (TextView) view.findViewById(R.id.list_family_textView);
 
-            Typeface font = Typeface.createFromAsset(view.getContext().getAssets(), "font/b_yekan.ttf");
-            name_textView.setTypeface(font);
-            family_tv.setTypeface(font);
+//            Typeface font = Typeface.createFromAsset(view.getContext().getAssets(), "font/b_yekan.ttf");
+//            name_textView.setTypeface(font);
+//            family_tv.setTypeface(font);
         }
     }
 }

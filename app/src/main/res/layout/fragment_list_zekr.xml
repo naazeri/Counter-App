@@ -18,12 +18,13 @@
 
         <TextView
             android:id="@+id/zekrList_textView_emptyMessage"
+            fontPath="font/b_yekan.ttf"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:visibility="gone"
             android:text="ذکری موجود نیست"
-            android:textSize="28sp" />
+            android:textSize="28sp"
+            android:visibility="gone" />
     </RelativeLayout>
 
 
@@ -31,9 +32,9 @@
         android:id="@+id/zekrList_floatButton_addZekr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="fabClick"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:onClick="fabClick"
         android:src="@drawable/add" />
 
 </android.support.design.widget.CoordinatorLayout>

@@ -1,34 +1,29 @@
 package ir.nazery.zekrshomar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
-import com.squareup.otto.Bus;
-import com.squareup.otto.Produce;
-import com.squareup.otto.Subscribe;
-import com.squareup.otto.ThreadEnforcer;
+import org.greenrobot.eventbus.EventBus;
 
 import ir.nazery.zekrshomar.database.DataManager;
-import ir.nazery.zekrshomar.database.Zekr;
 import ir.nazery.zekrshomar.fragments.CounterFragment;
 import ir.nazery.zekrshomar.fragments.ZekrListFragment;
 import ir.nazery.zekrshomar.setting.SettingsActivity;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity implements
         ZekrListFragment.OnZekrClickListener {
 
     private final String TAG = "aksjdfoiuqwer";
     private final String COUNTER_FRAGMENT = "cf";
-    public static Bus bus = new Bus(ThreadEnforcer.MAIN);
     private final int ADD = 1;
     private final int MINUS = -1;
 
@@ -43,14 +38,13 @@ public class MainActivity extends AppCompatActivity implements
         initDB();
         loadFirstFragment();
 
-        bus.register(this);
     }
 
-    @Subscribe
-    public void zekrChange(Zekr zekr) {
-        Log.d(TAG, String.format("event info: %s  %s", zekr.getZekrName(), zekr.getZekrCountAsString()));
-        Toast.makeText(MainActivity.this, "info: " + zekr.getZekrName(), Toast.LENGTH_SHORT).show();
-    }
+//    @Subscribe
+//    public void zekrChange(Zekr zekr) {
+//        Log.d(TAG, String.format("event info: %s  %s", zekr.getZekrName(), zekr.getZekrCountAsString()));
+//        Toast.makeText(MainActivity.this, "info: " + zekr.getZekrName(), Toast.LENGTH_SHORT).show();
+//    }
 
     private void initDB() {
         try {
@@ -79,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (action == KeyEvent.ACTION_DOWN) {
 //                    CounterFragment fragment = (CounterFragment) getSupportFragmentManager().findFragmentByTag(COUNTER_FRAGMENT);
 //                    fragment.changeValue(ADD);
-                    bus.post(ADD);
+                    EventBus.getDefault().post(ADD);
                 }
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
@@ -87,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (action == KeyEvent.ACTION_DOWN) {
 //                    CounterFragment fragment = (CounterFragment) getSupportFragmentManager().findFragmentByTag(COUNTER_FRAGMENT);
 //                    fragment.changeValue(MINUS);
-                    bus.post(MINUS);
+                    EventBus.getDefault().post(MINUS);
                 }
                 return true;
             }
@@ -97,23 +91,12 @@ public class MainActivity extends AppCompatActivity implements
         return super.dispatchKeyEvent(event);
     }
 
-//    @Produce
-//    Integer add() {
-//        return ADD;
-//    }
-//
-//    @Produce
-//    Integer minus() {
-//        return MINUS;
-//    }
-
     @Override
     public void onZekrSelected(int position) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.mainContainer, CounterFragment.newInstance(position), COUNTER_FRAGMENT)
                 .addToBackStack(null)
                 .commit();
-
     }
 
 //    private void emptyFragmentStack() {
@@ -145,16 +128,20 @@ public class MainActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
+//            case R.id.action_settings:
+//                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+//                return true;
             case R.id.action_rate:
                 try {
                     showBazarRate();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "خطا", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(MainActivity.this, "خطا", Toast.LENGTH_SHORT).show();
                 }
+                return true;
+
+            case R.id.action_aboutus:
+                startActivity(new Intent(this, AboutusActivity.class));
                 return true;
         }
 
@@ -174,6 +161,11 @@ public class MainActivity extends AppCompatActivity implements
         intent.setData(Uri.parse("bazaar://details?id=" + getPackageName()));
         intent.setPackage("com.farsitel.bazaar");
         startActivity(intent);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(base));
     }
 
 //    @Override

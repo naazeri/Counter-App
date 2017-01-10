@@ -1,9 +1,10 @@
 package ir.nazery.zekrshomar.fragments;
 
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -14,12 +15,15 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.squareup.otto.Bus;
-import com.squareup.otto.Produce;
-import com.squareup.otto.Subscribe;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
+import co.mobiwise.materialintro.animation.MaterialIntroListener;
+import co.mobiwise.materialintro.shape.Focus;
+import co.mobiwise.materialintro.shape.FocusGravity;
+import co.mobiwise.materialintro.view.MaterialIntroView;
 import in.championswimmer.sfg.lib.SimpleFingerGestures;
-import ir.nazery.zekrshomar.MainActivity;
 import ir.nazery.zekrshomar.R;
 import ir.nazery.zekrshomar.database.DataManager;
 import ir.nazery.zekrshomar.database.Zekr;
@@ -27,13 +31,13 @@ import ir.nazery.zekrshomar.database.Zekr;
 public class CounterFragment extends Fragment implements
         SimpleFingerGestures.OnFingerGestureListener {
 
-    private EditText zekrCount_textView;
     public static String TAG = "aksjdfoiuqwer";
     public Zekr zekr;
     private int actionLeft, actionRight, actionUp, actionDown;
     private DataManager dataManager;
-    private EditText zekrName_textView;
+    private EditText zekrCount_editText, zekrName_editText;
     private MediaPlayer mediaPlayer;
+    private Integer index = 0;
 
     public CounterFragment() {
     }
@@ -81,14 +85,40 @@ public class CounterFragment extends Fragment implements
             zekr = new Zekr("", 0);
         }
 
-        zekrName_textView = (EditText) view.findViewById(R.id.counter_zekrName_textView);
-        zekrCount_textView = (EditText) view.findViewById(R.id.counter_zekrCount_textView);
+        zekrName_editText = (EditText) view.findViewById(R.id.counter_zekrName_textView);
+        zekrCount_editText = (EditText) view.findViewById(R.id.counter_zekrCount_textView);
+        View emptyView = view.findViewById(R.id.emptyView);
 
-        zekrName_textView.setText(zekr.getZekrName());
-        zekrCount_textView.setText(zekr.getZekrCountAsString());
+        zekrName_editText.setText(zekr.getZekrName());
+        zekrCount_editText.setText(zekr.getZekrCountAsString());
 
-        Typeface font = Typeface.createFromAsset(getActivity().getAssets(), "font/b_yekan.ttf");
-        zekrName_textView.setTypeface(font);
+        View[] viewList = {zekrName_editText, zekrCount_editText, emptyView};
+        String[] stringList = {"نام ذکر را اینجا وارد کنید", "تعداد ذکر را اینجا وارد کنید", "از کلیدهای ولوم جهت افزایش یا کاهش ذکر استفاده کنید یا برروی این بخش دست خود را از چپ به راست یا برعکس بکشید"};
+        showHelp(viewList, stringList);
+    }
+
+    private void showHelp(final View[] views, final String[] texts) {
+        if (index < views.length) {
+            new MaterialIntroView.Builder(getActivity())
+                    .enableDotAnimation(true)
+                    .enableIcon(true)
+                    .setFocusGravity(FocusGravity.CENTER)
+                    .setFocusType(Focus.MINIMUM)
+                    .setDelayMillis(100)
+                    .enableFadeAnimation(true)
+                    .performClick(false)
+                    .setInfoText(texts[index])
+                    .setTarget(views[index])
+                    .setUsageId(index.toString()) //THIS SHOULD BE UNIQUE ID
+                    .setListener(new MaterialIntroListener() {
+                        @Override
+                        public void onUserClicked(String s) {
+                            showHelp(views, texts);
+                        }
+                    })
+                    .show();
+            index++;
+        }
     }
 
     private void setActions() {
@@ -101,13 +131,17 @@ public class CounterFragment extends Fragment implements
     }
 
     private void updateDisplay(Zekr zekr) {
-        zekrCount_textView.setText(zekr.getZekrCountAsString());
+        zekrCount_editText.setText(zekr.getZekrCountAsString());
     }
 
     public boolean changeValue(int n) {
 //        int zekrCount = zekr.getZekrCountAsInteger() + n;
         try {
-            int zekrCount = Integer.parseInt(zekrCount_textView.getText().toString()) + n;
+            String s = zekrCount_editText.getText().toString();
+            if (s.isEmpty()) {
+                s = "0";
+            }
+            int zekrCount = Integer.parseInt(s) + n;
             if (zekrCount <= 0) {
                 if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     mediaPlayer.stop();
@@ -119,11 +153,16 @@ public class CounterFragment extends Fragment implements
                     mediaPlayer = MediaPlayer.create(getActivity(), R.raw.music);
                 }
                 mediaPlayer.start();
+
+                vibrate();
             }
 
             if (zekrCount < 0) {
+                zekr.setZekrCount(0);
+                updateDisplay(zekr);
                 return false;
             }
+
             zekr.setZekrCount(zekrCount);
             updateDisplay(zekr);
         } catch (NumberFormatException e) {
@@ -131,6 +170,11 @@ public class CounterFragment extends Fragment implements
         }
 
         return true;
+    }
+
+    private void vibrate() {
+        Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(300);
     }
 
     @Override
@@ -172,27 +216,41 @@ public class CounterFragment extends Fragment implements
         return false;
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void volumeButtonClick(Integer value) {
 //        Log.d(TAG, "volumeButtonClick: " + value);
         changeValue(value);
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         setActions();
-        MainActivity.bus.register(this);
     }
 
     @Override
     public void onPause() {
         try {
-            MainActivity.bus.post(zekr);
+            if (zekrName_editText.getText().toString().isEmpty() || zekrCount_editText.getText().toString().isEmpty()) {
+                super.onPause();
+                return;
+            }
 
             int position = getArguments().getInt(Zekr.ZEKR_POSITION);
-            zekr.setZekrName(zekrName_textView.getText().toString());
-            zekr.setZekrCount(Integer.parseInt(zekrCount_textView.getText().toString()));
+            zekr.setZekrName(zekrName_editText.getText().toString());
+            zekr.setZekrCount(Integer.parseInt(zekrCount_editText.getText().toString()));
             dataManager.updateDB(zekr, position);
 
         } catch (NumberFormatException e1) {
@@ -203,7 +261,6 @@ public class CounterFragment extends Fragment implements
             Toast.makeText(getActivity(), R.string.errorInDB, Toast.LENGTH_LONG).show();
         }
 
-        MainActivity.bus.unregister(this);
         super.onPause();
     }
 }

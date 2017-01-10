@@ -1,6 +1,7 @@
 package ir.nazery.zekrshomar.database;
 
 import android.content.Context;
+import android.os.Handler;
 
 import com.orhanobut.hawk.Hawk;
 import com.orhanobut.hawk.HawkBuilder;

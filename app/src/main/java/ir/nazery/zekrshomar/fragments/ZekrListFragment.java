@@ -1,7 +1,6 @@
 package ir.nazery.zekrshomar.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,15 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.squareup.otto.Subscribe;
-
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import co.mobiwise.materialintro.shape.Focus;
+import co.mobiwise.materialintro.shape.FocusGravity;
+import co.mobiwise.materialintro.view.MaterialIntroView;
 import ir.nazery.zekrshomar.R;
 import ir.nazery.zekrshomar.adapter.RecyclerItemClickListener;
 import ir.nazery.zekrshomar.adapter.ZekrListAdapter;
@@ -31,9 +29,8 @@ import ir.nazery.zekrshomar.database.Zekr;
 
 public class ZekrListFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener {
 
-    private static final String TAG = "aksjdfoiuqwer";
+    private static final String TAG = "aaaa";
     private TextView emptyView;
-    private RecyclerView recyclerView;
     private OnZekrClickListener itemClickListener;
     private ZekrListAdapter adapter;
     private DataManager dataManager;
@@ -51,7 +48,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Log.d(TAG, "onViewCreated: called");
+//        Log.d(TAG, "onViewCreated: called");
         try {
             FloatingActionButton addZekr_fab = (FloatingActionButton) view.findViewById(R.id.zekrList_floatButton_addZekr);
             addZekr_fab.setOnClickListener(new View.OnClickListener() {
@@ -62,7 +59,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
             });
 
             emptyView = (TextView) view.findViewById(R.id.zekrList_textView_emptyMessage);
-            recyclerView = (RecyclerView) view.findViewById(R.id.zekrList_recyclerView);
+            RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.zekrList_recyclerView);
 
             recyclerView.setHasFixedSize(false);
             recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -70,6 +67,9 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
             adapter = new ZekrListAdapter(list);
             recyclerView.setAdapter(adapter);
             recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(view.getContext(), this));
+
+//            SnapHelper helper = new LinearSnapHelper();
+//            helper.attachToRecyclerView(recyclerView);
 
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
                 @Override
@@ -86,7 +86,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
                     adapter.notifyItemRemoved(position);
                     checkListIsEmpty();
 
-                    Snackbar.make(view, MessageFormat.format("ذکر '{0}' حذف شد", removedZekr.getZekrName()), Snackbar.LENGTH_LONG)
+                    Snackbar.make(view, String.format("ذکر %s حذف شد", removedZekr.getZekrName()), Snackbar.LENGTH_INDEFINITE)
                             .setAction("بازگرداندن", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -100,6 +100,48 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
             itemTouchHelper.attachToRecyclerView(recyclerView);
 
             updateDisplay();
+
+            int size = list.size();
+            if (size == 0) {
+                new MaterialIntroView.Builder(getActivity())
+                        .enableDotAnimation(true)
+                        .enableIcon(true)
+                        .setFocusGravity(FocusGravity.CENTER)
+                        .setFocusType(Focus.ALL)
+                        .setDelayMillis(700)
+                        .enableFadeAnimation(true)
+                        .performClick(false)
+                        .setInfoText("برای ایجاد ذکر جدید این گزینه را انتخاب کنید")
+                        .setTarget(addZekr_fab)
+                        .setUsageId("intro_fab") //THIS SHOULD BE UNIQUE ID
+                        .show();
+            } else if (size == 1){
+                new MaterialIntroView.Builder(getActivity())
+                        .enableDotAnimation(true)
+                        .enableIcon(true)
+                        .setFocusGravity(FocusGravity.CENTER)
+                        .setFocusType(Focus.MINIMUM)
+                        .setDelayMillis(700)
+                        .enableFadeAnimation(true)
+                        .performClick(false)
+                        .setInfoText("جهت حذف ذکر، آن را به سمت چپ یا راست بکشید")
+                        .setTarget(recyclerView)
+                        .setUsageId("remove_list") //THIS SHOULD BE UNIQUE ID
+                        .show();
+            } else if (size > 1){
+                new MaterialIntroView.Builder(getActivity())
+                        .enableDotAnimation(true)
+                        .enableIcon(true)
+                        .setFocusGravity(FocusGravity.CENTER)
+                        .setFocusType(Focus.MINIMUM)
+                        .setDelayMillis(700)
+                        .enableFadeAnimation(true)
+                        .performClick(false)
+                        .setInfoText("برای جابه جایی ذکرها روی ذکر لمس طولانی کنید و سپس آن را جا به جا کنید")
+                        .setTarget(recyclerView)
+                        .setUsageId("arrange_list") //THIS SHOULD BE UNIQUE ID
+                        .show();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,18 +159,18 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
         }
     }
 
-    private void checkListIsEmpty() {
-        if (emptyView != null) {
-            emptyView.setVisibility(list.size() > 0 ? TextView.GONE : TextView.VISIBLE);
-        }
-    }
-
     private void updateDisplay() throws Exception {
         list.clear();
         list.addAll(dataManager.getZekrs());
         adapter.notifyDataSetChanged();
 
         checkListIsEmpty();
+    }
+
+    private void checkListIsEmpty() {
+        if (emptyView != null) {
+            emptyView.setVisibility(list.size() > 0 ? TextView.GONE : TextView.VISIBLE);
+        }
     }
 
     @Override
