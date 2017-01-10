@@ -4,28 +4,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import ir.nazery.zekrshomar.database.DataManager;
-import ir.nazery.zekrshomar.fragments.CounterFragment;
+import ir.nazery.zekrshomar.database.Zekr;
 import ir.nazery.zekrshomar.fragments.ZekrListFragment;
-import ir.nazery.zekrshomar.setting.SettingsActivity;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MainActivity extends AppCompatActivity implements
-        ZekrListFragment.OnZekrClickListener {
+public class MainActivity extends AppCompatActivity {
 
-    private final String TAG = "aksjdfoiuqwer";
-    private final String COUNTER_FRAGMENT = "cf";
+    private final String TAG = "aaaa";
     private final int ADD = 1;
     private final int MINUS = -1;
+    private DataManager dataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +35,8 @@ public class MainActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        initDB();
         loadFirstFragment();
-
+        dataManager = new DataManager();
     }
 
 //    @Subscribe
@@ -45,15 +44,6 @@ public class MainActivity extends AppCompatActivity implements
 //        Log.d(TAG, String.format("event info: %s  %s", zekr.getZekrName(), zekr.getZekrCountAsString()));
 //        Toast.makeText(MainActivity.this, "info: " + zekr.getZekrName(), Toast.LENGTH_SHORT).show();
 //    }
-
-    private void initDB() {
-        try {
-            new DataManager().initDB(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, R.string.errorInDB, Toast.LENGTH_LONG).show();
-        }
-    }
 
     private void loadFirstFragment() {
         ZekrListFragment fragment = new ZekrListFragment();
@@ -91,10 +81,10 @@ public class MainActivity extends AppCompatActivity implements
         return super.dispatchKeyEvent(event);
     }
 
-    @Override
-    public void onZekrSelected(int position) {
+    public void changeFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.mainContainer, CounterFragment.newInstance(position), COUNTER_FRAGMENT)
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                .replace(R.id.mainContainer, fragment, fragment.getClass().getSimpleName())
                 .addToBackStack(null)
                 .commit();
     }
@@ -104,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements
 //        }
 //    }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void saveZekr(Zekr zekr) {
+        dataManager.updateDB(zekr);
+    }
+
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
@@ -111,6 +106,18 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             getSupportFragmentManager().popBackStack();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
