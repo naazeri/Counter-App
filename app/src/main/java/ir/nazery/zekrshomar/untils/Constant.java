@@ -5,8 +5,9 @@ package ir.nazery.zekrshomar.untils;
  ***/
 
 public class Constant {
-    public static final String DB_ZEKRS = "z";
-    public static final String ZEKR_NAME = "zn";
-    public static final String ZEKR_COUNT = "zc";
-    public static final String ZEKR_POSITION = "p";
+    public static final MarketTarget MARKET_TARGET = MarketTarget.bazar;
+
+    public enum MarketTarget {
+        bazar, myket, avalmarket
+    }
 }

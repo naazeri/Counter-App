@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.activeandroid.ActiveAndroid;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -24,7 +26,7 @@ import ir.nazery.zekrshomar.R;
 import ir.nazery.zekrshomar.adapter.RecyclerItemClickListener;
 import ir.nazery.zekrshomar.adapter.ZekrListAdapter;
 import ir.nazery.zekrshomar.database.DataManager;
-import ir.nazery.zekrshomar.database.Zekr;
+import ir.nazery.zekrshomar.model.Zekr;
 
 public class ZekrListFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener {
 
@@ -33,6 +35,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
     private ZekrListAdapter adapter;
     private DataManager dataManager;
     private List<Zekr> list;
+//    private boolean rearranged = false;
 
     public ZekrListFragment() {
     }
@@ -55,7 +58,10 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
                 @Override
                 public void onClick(View view) {
                     MainActivity mainActivity = (MainActivity) context;
-                    Zekr zekr = new Zekr("", 0, -1);
+                    Zekr zekr = new Zekr("", 0, list.size());
+
+                    // here save it. so later just will update
+                    zekr.save();
                     mainActivity.changeFragment(CounterFragment.newInstance(zekr));
                 }
             });
@@ -74,8 +80,22 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
             ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
                 @Override
                 public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                    Collections.swap(list, viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                    adapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                    int fromPosition = viewHolder.getAdapterPosition();
+                    int toPosition = target.getAdapterPosition();
+                    Zekr fromZekr = list.get(fromPosition);
+                    Zekr toZekr = list.get(toPosition);
+
+                    ActiveAndroid.beginTransaction();
+                    fromZekr.position = toPosition;
+                    toZekr.position = fromPosition;
+                    fromZekr.save();
+                    toZekr.save();
+                    ActiveAndroid.setTransactionSuccessful();
+                    ActiveAndroid.endTransaction();
+
+                    Collections.swap(list, fromPosition, toPosition);
+                    adapter.notifyItemMoved(fromPosition, toPosition);
+//                    rearranged = true;
                     return true;
                 }
 
@@ -83,6 +103,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
                 public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                     final int position = viewHolder.getAdapterPosition();
                     final Zekr removedZekr = list.remove(position);
+                    removedZekr.delete();
                     adapter.notifyItemRemoved(position);
                     checkListIsEmpty();
 
@@ -91,6 +112,8 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
                                 @Override
                                 public void onClick(View view) {
                                     list.add(position, removedZekr);
+                                    Zekr zekr = new Zekr(removedZekr);
+                                    zekr.save();
                                     adapter.notifyItemInserted(position);
                                     checkListIsEmpty();
                                 }
@@ -157,7 +180,6 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
         try {
             MainActivity mainActivity = (MainActivity) getActivity();
             Zekr zekr = list.get(position);
-            zekr.setPosition(position);
             mainActivity.changeFragment(CounterFragment.newInstance(zekr));
         } catch (NullPointerException e) {
             Snackbar.make(v, R.string.zekr404, Snackbar.LENGTH_LONG).show();
@@ -176,7 +198,7 @@ public class ZekrListFragment extends Fragment implements RecyclerItemClickListe
         super.onStop();
 
         try {
-            dataManager.setZekrs(list);
+//            dataManager.setZekrs(list);
         } catch (Exception e) {
             e.printStackTrace();
         }

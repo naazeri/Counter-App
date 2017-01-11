@@ -9,7 +9,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import ir.nazery.zekrshomar.R;
-import ir.nazery.zekrshomar.database.Zekr;
+import ir.nazery.zekrshomar.model.Zekr;
 
 /***
  * Created by REZA on 1/25/2016

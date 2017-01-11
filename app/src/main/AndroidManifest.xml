@@ -11,6 +11,11 @@
         android:name=".App"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="ir.nazery.zekrshomar.model.Zekr" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

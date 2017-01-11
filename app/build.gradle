@@ -7,12 +7,13 @@ android {
         applicationId 'ir.nazery.zekrshomar'
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 2
+        versionCode 1
         versionName "1.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -22,9 +23,6 @@ android {
 
 repositories {
     jcenter()
-    maven {
-        url "https://jitpack.io"
-    }
 }
 
 dependencies {
@@ -35,8 +33,7 @@ dependencies {
     compile 'com.android.support:cardview-v7:24.2.1'
     compile 'com.android.support:recyclerview-v7:24.2.1'
     compile files('libs/libSFG-1.1-release.jar')
-    compile files('libs/gson-2.6.2.jar')
-    compile files('libs/hawk-1.23.jar')
+    compile files('libs/activeandroid-3.1.0-SNAPSHOT.jar')
     compile project(':calligraphy-2.2.0')
     compile project(':DataEgg')
     compile project(':MaterialIntroView1.5.2')

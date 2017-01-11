@@ -4,9 +4,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,13 +21,12 @@ import co.mobiwise.materialintro.shape.FocusGravity;
 import co.mobiwise.materialintro.view.MaterialIntroView;
 import in.championswimmer.sfg.lib.SimpleFingerGestures;
 import ir.nazery.zekrshomar.R;
-import ir.nazery.zekrshomar.database.Zekr;
+import ir.nazery.zekrshomar.model.Zekr;
 
-public class CounterFragment extends Fragment implements
-        SimpleFingerGestures.OnFingerGestureListener {
+public class CounterFragment extends Fragment implements SimpleFingerGestures.OnFingerGestureListener {
 
     private static String TAG = "aaaa";
-    public Zekr zekr;
+    private static Zekr zekr;
     private int actionLeft = 1;
     private int actionRight = -1;
     private int actionUp = 0;
@@ -41,22 +38,23 @@ public class CounterFragment extends Fragment implements
     public CounterFragment() {
     }
 
-    public static CounterFragment newInstance(Zekr zekr) {
+    public static CounterFragment newInstance(Zekr z) {
         CounterFragment fragment = new CounterFragment();
-        Bundle bundle = zekr.toBundle();
-        fragment.setArguments(bundle);
+//        Bundle bundle = zekr.toBundle();
+//        fragment.setArguments(bundle);
+        zekr = z;
         return fragment;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            zekr = new Zekr(bundle);
-        }
-    }
+//    @Override
+//    public void onCreate(@Nullable Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        Bundle bundle = getArguments();
+//        if (bundle != null) {
+//            zekr = new Zekr(bundle);
+//        }
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -231,7 +229,8 @@ public class CounterFragment extends Fragment implements
                 zekr.setZekrCount(Integer.parseInt(zekrCount_editText.getText().toString()));
             }
 
-            EventBus.getDefault().post(zekr);
+            zekr.save();
+//            EventBus.getDefault().post(zekr);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getActivity(), R.string.errorInDB, Toast.LENGTH_LONG).show();

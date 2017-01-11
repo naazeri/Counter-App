@@ -12,12 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
-import ir.nazery.zekrshomar.database.DataManager;
-import ir.nazery.zekrshomar.database.Zekr;
 import ir.nazery.zekrshomar.fragments.ZekrListFragment;
+import ir.nazery.zekrshomar.untils.Constant;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "aaaa";
     private final int ADD = 1;
     private final int MINUS = -1;
-    private DataManager dataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         loadFirstFragment();
-        dataManager = new DataManager();
     }
 
 //    @Subscribe
@@ -94,10 +89,10 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void saveZekr(Zekr zekr) {
-        dataManager.updateDB(zekr);
-    }
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void saveZekr(Zekr zekr) {
+//        dataManager.updateDB(zekr);
+//    }
 
     @Override
     public void onBackPressed() {
@@ -108,22 +103,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-    }
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        EventBus.getDefault().register(this);
+//    }
+//
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        EventBus.getDefault().unregister(this);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        switch (Constant.MARKET_TARGET) {
+            case bazar:
+                menu.findItem(R.id.action_rate).setVisible(true);
+                break;
+            case myket:
+                menu.findItem(R.id.action_rate).setVisible(true);
+                break;
+            case avalmarket:
+                menu.findItem(R.id.action_rate).setVisible(false);
+                break;
+        }
         return true;
     }
 
@@ -139,12 +145,7 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
 //                return true;
             case R.id.action_rate:
-                try {
-                    showBazarRate();
-                } catch (Exception e) {
-                    e.printStackTrace();
-//                    Toast.makeText(MainActivity.this, "خطا", Toast.LENGTH_SHORT).show();
-                }
+                showRate();
                 return true;
 
             case R.id.action_aboutus:
@@ -153,6 +154,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showRate() {
+        try {
+            switch (Constant.MARKET_TARGET) {
+                case bazar:
+                    showBazarRate();
+                    break;
+                case myket:
+                    showMyketRate();
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+//                    Toast.makeText(MainActivity.this, "خطا", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showMyketRate() throws Exception {
