@@ -7,7 +7,7 @@
 - change Zekr count with swipe of volume button
 - use ActiveAndroid for ORM
 
-## Markets link:
+## Market link:
 cafebazaar: https://cafebazaar.ir/app/ir.nazery.zekrshomar/?l=fa
 
 myket: http://myket.ir/app/ir.nazery.zekrshomar/?lang=fa
