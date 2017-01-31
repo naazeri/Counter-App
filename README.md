@@ -1,7 +1,8 @@
 # ZekrShomar
-###برنامه ذکر شمار برای اندروید
+###ZekrShomar android application
 
 
-## قابلیت ها
-- ذخیره کردن ذکر هایی که کاربر گفته است
-- افزایش یا کاهش ذکر ها با کشیدن انگشت برروی صفحه
+## Features
+- save Zekr(s) in Database
+- change Zekr count with swipe of volume button
+- use ActiveAndroid for ORM
