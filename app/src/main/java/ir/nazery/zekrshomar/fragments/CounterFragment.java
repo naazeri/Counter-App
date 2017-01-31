@@ -21,7 +21,9 @@ import co.mobiwise.materialintro.shape.FocusGravity;
 import co.mobiwise.materialintro.view.MaterialIntroView;
 import in.championswimmer.sfg.lib.SimpleFingerGestures;
 import ir.nazery.zekrshomar.R;
+import ir.nazery.zekrshomar.lib.Remember;
 import ir.nazery.zekrshomar.model.Zekr;
+import ir.nazery.zekrshomar.untils.Constant;
 
 public class CounterFragment extends Fragment implements SimpleFingerGestures.OnFingerGestureListener {
 
@@ -139,7 +141,9 @@ public class CounterFragment extends Fragment implements SimpleFingerGestures.On
 
                 mediaPlayer = MediaPlayer.create(getActivity(), R.raw.music);
                 mediaPlayer.start();
-                vibrate();
+                if (Remember.getBoolean(Constant.VIBRATE, true)) {
+                    vibrate();
+                }
 
                 zekrCount = 0;
             }

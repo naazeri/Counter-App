@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import org.greenrobot.eventbus.EventBus;
 
 import ir.nazery.zekrshomar.fragments.ZekrListFragment;
+import ir.nazery.zekrshomar.lib.Remember;
 import ir.nazery.zekrshomar.untils.Constant;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -141,9 +142,12 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
-//            case R.id.action_settings:
-//                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-//                return true;
+            case R.id.action_vibrate:
+                if (item.isCheckable()) {
+                    item.setChecked(!item.isChecked());
+                    Remember.putBoolean(Constant.VIBRATE, item.isChecked());
+                }
+                return true;
             case R.id.action_rate:
                 showRate();
                 return true;

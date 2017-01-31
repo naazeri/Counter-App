@@ -5,7 +5,8 @@ package ir.nazery.zekrshomar.untils;
  ***/
 
 public class Constant {
-    public static final MarketTarget MARKET_TARGET = MarketTarget.bazar;
+    public static final MarketTarget MARKET_TARGET = MarketTarget.avalmarket;
+    public static final String VIBRATE = "v";
 
     public enum MarketTarget {
         bazar, myket, avalmarket

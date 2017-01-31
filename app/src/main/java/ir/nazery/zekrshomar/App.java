@@ -1,5 +1,7 @@
 package ir.nazery.zekrshomar;
 
+import ir.nazery.zekrshomar.lib.Remember;
+
 /***
  * Created by reza on 95/10/20.
  ***/
@@ -10,6 +12,7 @@ public class App extends com.activeandroid.app.Application {
     public void onCreate() {
         super.onCreate();
 
+        Remember.init(this, getPackageName());
 //        try {
 //            new DataManager().initDB(this);
 //        } catch (Exception e) {
