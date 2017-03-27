@@ -39,6 +39,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:24.2.1'
     compile files('libs/libSFG-1.1-release.jar')
     compile files('libs/activeandroid-3.1.0-SNAPSHOT.jar')
+    compile files('libs/eventbus-3.0.0.jar')
     compile project(':calligraphy-2.2.0')
     compile project(':DataEgg')
     compile project(':MaterialIntroView1.5.2')
